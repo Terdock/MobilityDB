@@ -84,7 +84,7 @@ $remove_duplicate$;
 
 ------------------
 
-
+https://towardsdatascience.com/outlier-detection-with-hampel-filter-85ddf523c73d
 
 CREATE OR REPLACE FUNCTION get_partial_median(database_object text,id bigint,windows_size int, key_value bigint)
   RETURNS SETOF DOUBLE PRECISION
@@ -149,6 +149,7 @@ $hampel_filter_outlier_detection$;
 
 ------------------
 
+-- https://github.com/wouterbulten/kalmanjs/blob/master/contrib/sql/sp_kalman.sql
 -- DROP TABLE KalmanState;
 -- CREATE TABLE KalmanState( id serial primary key, x float NULL, cov float NULL, predX float NULL, predCov float NULL, K float NULL, identifier bigint NOT NULL );
 --drop function kalman_filter(bigint, double precision);
