@@ -40,11 +40,27 @@ END
 $filter_bounding_box$;
 
 
+ /*
+ * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ * Purpose: 
+ * Check the outlier points based on distance between 2 consecutive points.
+ * Outlier formula:
+ * |    Lower outlier = Q1 - (1.5*IQR)
+ * |    Higher outlier = Q3 + (1.5*IQR)
+ * |    IQR = Inter quartile range = Q3 - Q1
+ * |    We need to find points between lower and higher outlier
+ *
+ * Parameters
+ * ----------
+ * databaseobject text : name of database object
+ * propriety text : column name of column to filter
+ *
+ * Returns
+ * -------
+ * Filtered table 
+ */
 
-
-https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
-
-CREATE OR REPLACE FUNCTION filter_outlier_with_iq(databaseobject text,proprity text)
+CREATE OR REPLACE FUNCTION filter_outlier_with_iq(databaseobject text,propriety text)
   RETURNS SETOF aisinput
   LANGUAGE plpgsql AS
 $filter_outlier_with_iq$
@@ -63,7 +79,7 @@ BEGIN
 			SELECT *
 			FROM %1$s AS database
 			WHERE database.%2$s <= (SELECT higher FROM q) AND database.%2$s >= (SELECT lower FROM q)  ;'
-	,databaseobject,proprity);
+	,databaseobject,propriety);
 			END	
 $filter_outlier_with_iq$;
 
