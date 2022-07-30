@@ -227,6 +227,7 @@ BEGIN
 		,K
 		,ident
 	);
+  
 	
 	SELECT x INTO prediction;
 	   
@@ -237,5 +238,39 @@ $kalman_filter$;
  SELECT kalman_filter(kalman_table.id, kalman_table.latitude) FROM kalman_table;
 
 -----------------------
+
+CREATE OR REPLACE FUNCTION z_score_filter(databaseobject text,key2 text,column_name text)
+  RETURNS SETOF kalmanfilteredtable
+  LANGUAGE plpgsql AS
+$z_score_filter$
+BEGIN
+   RETURN QUERY EXECUTE
+   format( 'WITH mean_sd AS (
+				SELECT AVG(%1$s.%3$s) as mean, STDDEV(%1$s.%3$s) AS sd 
+				FROM %1$s
+			),
+			z AS ( 
+				SELECT %1$s.id, abs(%1$s.%3$s - mean_sd.mean) / mean_sd.sd AS z_score
+				FROM %1$s, mean_sd
+			)
+			SELECT %1$s.*
+			FROM %1$s JOIN z on %1$s.id = z.id
+			WHERE  z_score < 3;'
+		,databaseobject,key2,column_name);
+END
+$z_score_filter$;
+
+
+
+--Example
+--CREATE TABLE kalmanfilteredtable AS (SELECT ROW_NUMBER() OVER() AS id, * FROM aisinput);
+
+
+ 
+ SELECT COUNT(*) FROM z_score_filter('kalmanfilteredtable','mmsi','sog');
+
+ 
+
+
 
 
