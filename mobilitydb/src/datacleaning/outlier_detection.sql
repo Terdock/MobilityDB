@@ -12,7 +12,6 @@
  * -------
  * Filtered table 
  */
-
 CREATE OR REPLACE FUNCTION filter_by_id( table_name text, key_name text, key_value bigint)
   RETURNS SETOF aisinput
   LANGUAGE plpgsql AS
@@ -30,19 +29,15 @@ $filter_by_id$;
 
 
  /*
- * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
- * Purpose: 
- * Check the outlier points based on distance between 2 consecutive points.
- * Outlier formula:
- * |    Lower outlier = Q1 - (1.5*IQR)
- * |    Higher outlier = Q3 + (1.5*IQR)
- * |    IQR = Inter quartile range = Q3 - Q1
- * |    We need to find points between lower and higher outlier
+ * Author: Kasidi Mwinyi
+ * Purpose: Filtering the table with an external fixed threshold
  *
  * Parameters
  * ----------
- * databaseobject text : name of database object
- * propriety text : column name of column to filter
+ * table_name text : name of database object to filter
+ * key_name text : column name to filter
+ * condition text : Athreshold DOUBLE PRECISION
+ * threshold DOUBLE PRECISION
  *
  * Returns
  * -------
@@ -65,14 +60,8 @@ $filter_by_treshold$;
 
 
  /*
- * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ * Author: Kasidi Mwinyi
  * Purpose: 
- * Check the outlier points based on distance between 2 consecutive points.
- * Outlier formula:
- * |    Lower outlier = Q1 - (1.5*IQR)
- * |    Higher outlier = Q3 + (1.5*IQR)
- * |    IQR = Inter quartile range = Q3 - Q1
- * |    We need to find points between lower and higher outlier
  *
  * Parameters
  * ----------
@@ -89,7 +78,8 @@ CREATE OR REPLACE FUNCTION filter_bounding_box (databaseobject text,x_name text,
 $filter_bounding_box$
 BEGIN
    RETURN QUERY EXECUTE
-   format( 'SELECT *
+   format( 
+     'SELECT *
 			FROM %1$s AS database
 			ORDER BY database.%2$s BETWEEN %3$s AND %4$s AND database.%5$s BETWEEN %6$s AND %7$s;' 
 			,databaseobject,x_name,xmin, xmax, y_name,  ymin, ymax);
