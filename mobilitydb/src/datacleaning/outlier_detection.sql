@@ -1,31 +1,88 @@
-CREATE OR REPLACE FUNCTION filter_by_id(databaseobject text,key2 text,id int)
+ /*
+ * Author: Kasidi Mwinyi
+ * Purpose: Extract all datas from the same key
+ *
+ * Parameters
+ * ----------
+ * table_name text : table name
+ * key_name text : key name
+ * key_value bigint : key value
+ * 
+ * Returns
+ * -------
+ * Filtered table 
+ */
+
+CREATE OR REPLACE FUNCTION filter_by_id( table_name text, key_name text, key_value bigint)
   RETURNS SETOF aisinput
   LANGUAGE plpgsql AS
-$show_mmsi$
+$filter_by_id$
 BEGIN
    RETURN QUERY EXECUTE
-   format( 'SELECT *
-			FROM %1$s AS database
-			WHERE database.%2$s = %3$s;',databaseobject,key2,id);
+   format( 
+     'SELECT *
+			FROM %1$s AS table_filtered
+			WHERE table_filtered.%2$s = %3$s;'
+   ,table_name,key_name,key_value);
 END
-$show_mmsi$;
+$filter_by_id$;
 
 
-CREATE OR REPLACE FUNCTION filter_outlier_by_treshold(databaseobject text,propriety text,condition text,threshold int)
+
+ /*
+ * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ * Purpose: 
+ * Check the outlier points based on distance between 2 consecutive points.
+ * Outlier formula:
+ * |    Lower outlier = Q1 - (1.5*IQR)
+ * |    Higher outlier = Q3 + (1.5*IQR)
+ * |    IQR = Inter quartile range = Q3 - Q1
+ * |    We need to find points between lower and higher outlier
+ *
+ * Parameters
+ * ----------
+ * databaseobject text : name of database object
+ * propriety text : column name of column to filter
+ *
+ * Returns
+ * -------
+ * Filtered table 
+ */
+CREATE OR REPLACE FUNCTION filter_by_treshold(table_name text,key_name text,condition text,threshold DOUBLE PRECISION)
   RETURNS SETOF aisinput
   LANGUAGE plpgsql AS
-$filter_outlier_by_treshold$
+$filter_by_treshold$
 BEGIN
    RETURN QUERY EXECUTE
-   format( 'SELECT *
+   format( 
+     'SELECT *
 			FROM %1$s AS database
-			WHERE database.%2$s %3$s %4$s;',databaseobject,propriety,condition,threshold);
+			WHERE database.%2$s %3$s %4$s;
+     '
+    ,table_name,key_name,condition,threshold);
 END
-$filter_outlier_by_treshold$;
+$filter_by_treshold$;
 
 
-
-
+ /*
+ * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ * Purpose: 
+ * Check the outlier points based on distance between 2 consecutive points.
+ * Outlier formula:
+ * |    Lower outlier = Q1 - (1.5*IQR)
+ * |    Higher outlier = Q3 + (1.5*IQR)
+ * |    IQR = Inter quartile range = Q3 - Q1
+ * |    We need to find points between lower and higher outlier
+ *
+ * Parameters
+ * ----------
+ * databaseobject text : name of database object
+ * propriety text : column name of column to filter
+ *
+ * Returns
+ * -------
+ * Filtered table 
+ */
 CREATE OR REPLACE FUNCTION filter_bounding_box (databaseobject text,x_name text, xmin float, xmax float, y_name text, ymin float, ymax float)
   RETURNS SETOF aisinput
   LANGUAGE plpgsql AS
@@ -84,7 +141,25 @@ BEGIN
 $filter_outlier_with_iq$;
 
 
-
+ /*
+ * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ * Purpose: 
+ * Check the outlier points based on distance between 2 consecutive points.
+ * Outlier formula:
+ * |    Lower outlier = Q1 - (1.5*IQR)
+ * |    Higher outlier = Q3 + (1.5*IQR)
+ * |    IQR = Inter quartile range = Q3 - Q1
+ * |    We need to find points between lower and higher outlier
+ *
+ * Parameters
+ * ----------
+ * databaseobject text : name of database object
+ * propriety text : column name of column to filter
+ *
+ * Returns
+ * -------
+ * Filtered table 
+ */
 CREATE OR REPLACE FUNCTION remove_duplicate (databaseobject text,id text,t text)
   RETURNS SETOF aisinput
   LANGUAGE plpgsql AS
@@ -98,8 +173,29 @@ BEGIN
 END
 $remove_duplicate$;
 
+
+
 ------------------
 
+ /*
+ * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ * Purpose: 
+ * Check the outlier points based on distance between 2 consecutive points.
+ * Outlier formula:
+ * |    Lower outlier = Q1 - (1.5*IQR)
+ * |    Higher outlier = Q3 + (1.5*IQR)
+ * |    IQR = Inter quartile range = Q3 - Q1
+ * |    We need to find points between lower and higher outlier
+ *
+ * Parameters
+ * ----------
+ * databaseobject text : name of database object
+ * propriety text : column name of column to filter
+ *
+ * Returns
+ * -------
+ * Filtered table 
+ */
 https://towardsdatascience.com/outlier-detection-with-hampel-filter-85ddf523c73d
 
 CREATE OR REPLACE FUNCTION get_partial_median(database_object text,id bigint,windows_size int, key_value bigint)
@@ -116,6 +212,25 @@ END
 $get_partial_median$;
 
 
+ /*
+ * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ * Purpose: 
+ * Check the outlier points based on distance between 2 consecutive points.
+ * Outlier formula:
+ * |    Lower outlier = Q1 - (1.5*IQR)
+ * |    Higher outlier = Q3 + (1.5*IQR)
+ * |    IQR = Inter quartile range = Q3 - Q1
+ * |    We need to find points between lower and higher outlier
+ *
+ * Parameters
+ * ----------
+ * databaseobject text : name of database object
+ * propriety text : column name of column to filter
+ *
+ * Returns
+ * -------
+ * Filtered table 
+ */
 CREATE OR REPLACE FUNCTION get_partial_mad(database_object text,key_value DOUBLE PRECISION, median DOUBLE PRECISION ,id bigint,windows_size int)
   RETURNS SETOF DOUBLE PRECISION
   LANGUAGE plpgsql AS
@@ -134,6 +249,25 @@ END
 $get_partial_mad$;
 
 
+ /*
+ * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ * Purpose: 
+ * Check the outlier points based on distance between 2 consecutive points.
+ * Outlier formula:
+ * |    Lower outlier = Q1 - (1.5*IQR)
+ * |    Higher outlier = Q3 + (1.5*IQR)
+ * |    IQR = Inter quartile range = Q3 - Q1
+ * |    We need to find points between lower and higher outlier
+ *
+ * Parameters
+ * ----------
+ * databaseobject text : name of database object
+ * propriety text : column name of column to filter
+ *
+ * Returns
+ * -------
+ * Filtered table 
+ */
 CREATE OR REPLACE FUNCTION hampel_filter_outlier_detection(database_object text,windows_size int)
   RETURNS TABLE( id bigint, median DOUBLE PRECISION  ) 
   LANGUAGE plpgsql AS
@@ -160,9 +294,6 @@ $hampel_filter_outlier_detection$;
 
 
 
-
-
-
 ------------------
 
 -- https://github.com/wouterbulten/kalmanjs/blob/master/contrib/sql/sp_kalman.sql
@@ -172,7 +303,25 @@ $hampel_filter_outlier_detection$;
 
 --CREATE TABLE kalman_table AS (  SELECT ROW_NUMBER() OVER() AS id,*  FROM aisinput ORDER BY mmsi, t );
 
-
+ /*
+ * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ * Purpose: 
+ * Check the outlier points based on distance between 2 consecutive points.
+ * Outlier formula:
+ * |    Lower outlier = Q1 - (1.5*IQR)
+ * |    Higher outlier = Q3 + (1.5*IQR)
+ * |    IQR = Inter quartile range = Q3 - Q1
+ * |    We need to find points between lower and higher outlier
+ *
+ * Parameters
+ * ----------
+ * databaseobject text : name of database object
+ * propriety text : column name of column to filter
+ *
+ * Returns
+ * -------
+ * Filtered table 
+ */
 CREATE OR REPLACE FUNCTION kalman_filter(ident bigint,z DOUBLE PRECISION, OUT prediction DOUBLE PRECISION )
   RETURNS SETOF FLOAT
   LANGUAGE plpgsql AS
