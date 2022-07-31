@@ -235,41 +235,57 @@ END
 $kalman_filter$;
 
 
- SELECT kalman_filter(kalman_table.id, kalman_table.latitude) FROM kalman_table;
 
 -----------------------
 
-CREATE OR REPLACE FUNCTION z_score_filter(databaseobject text,key2 text,column_name text)
+/*
+ * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ * Purpose: 
+ * Check the outlier points based on distance between 2 consecutive points.
+ * Outlier formula:
+ * |    Lower outlier = Q1 - (1.5*IQR)
+ * |    Higher outlier = Q3 + (1.5*IQR)
+ * |    IQR = Inter quartile range = Q3 - Q1
+ * |    We need to find points between lower and higher outlier
+ *
+ * Parameters
+ * ----------
+ * databaseobject text : name of database object
+ * propriety text : column name of column to filter
+ *
+ * Returns
+ * -------
+ * Filtered table 
+ */
+
+CREATE OR REPLACE FUNCTION z_score_filter(databaseobject text,column_name text)
   RETURNS SETOF kalmanfilteredtable
   LANGUAGE plpgsql AS
 $z_score_filter$
 BEGIN
    RETURN QUERY EXECUTE
    format( 'WITH mean_sd AS (
-				SELECT AVG(%1$s.%3$s) as mean, STDDEV(%1$s.%3$s) AS sd 
+				SELECT AVG(%1$s.%2$s) as mean, STDDEV(%1$s.%2$s) AS sd 
 				FROM %1$s
 			),
 			z AS ( 
-				SELECT %1$s.id, abs(%1$s.%3$s - mean_sd.mean) / mean_sd.sd AS z_score
+				SELECT %1$s.id, abs(%1$s.%2$s - mean_sd.mean) / mean_sd.sd AS z_score
 				FROM %1$s, mean_sd
 			)
 			SELECT %1$s.*
 			FROM %1$s JOIN z on %1$s.id = z.id
 			WHERE  z_score < 3;'
-		,databaseobject,key2,column_name);
+		,databaseobject,column_name);
 END
 $z_score_filter$;
 
 
 
---Example
+--Creation of table 
 --CREATE TABLE kalmanfilteredtable AS (SELECT ROW_NUMBER() OVER() AS id, * FROM aisinput);
+ 
 
 
- 
- SELECT COUNT(*) FROM z_score_filter('kalmanfilteredtable','mmsi','sog');
- 
- 
  
  --CREATE TABLE stddev_table AS ( SELECT ROW_NUMBER() OVER() AS id,* FROM aisinput ) ;
 
@@ -315,7 +331,6 @@ BEGIN
 			END	
 $filter_outlier_with_iq$;
 
-SELECT Count(*) FROM filter_outlier_with_stddev('stddev_table','sog');
 
 
  
