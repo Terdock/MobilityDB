@@ -1,4 +1,4 @@
-##Example filter_outlier_by_treshold
+## Example filter_outlier_by_treshold
 
 ```postgresql
 drop table test;
