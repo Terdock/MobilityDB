@@ -268,6 +268,55 @@ $z_score_filter$;
 
  
  SELECT COUNT(*) FROM z_score_filter('kalmanfilteredtable','mmsi','sog');
+ 
+ 
+ 
+ --CREATE TABLE stddev_table AS ( SELECT ROW_NUMBER() OVER() AS id,* FROM aisinput ) ;
+
+/*
+ * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ * Purpose: 
+ * Check the outlier points based on distance between 2 consecutive points.
+ * Outlier formula:
+ * |    Lower outlier = Q1 - (1.5*IQR)
+ * |    Higher outlier = Q3 + (1.5*IQR)
+ * |    IQR = Inter quartile range = Q3 - Q1
+ * |    We need to find points between lower and higher outlier
+ *
+ * Parameters
+ * ----------
+ * databaseobject text : name of database object
+ * propriety text : column name of column to filter
+ *
+ * Returns
+ * -------
+ * Filtered table 
+ */
+
+ CREATE OR REPLACE FUNCTION filter_outlier_with_stddev(databaseobject text,propriety text)
+  RETURNS SETOF stddev_table
+  LANGUAGE plpgsql AS
+$filter_outlier_with_iq$
+BEGIN
+   RETURN QUERY EXECUTE
+   format( 'WITH mean_sd AS (
+				SELECT AVG (database.%2$s) AS mean, STDDEV(database.%2$s) AS sd  
+				FROM %1$s AS database
+			),stddev_bound AS ( 
+				SELECT 
+					mean_sd.mean + 3 * mean_sd.sd AS higher,
+					mean_sd.mean - 3 * mean_sd.sd AS lower 
+				FROM mean_sd
+			)
+			SELECT database.*
+			FROM %1$s AS database, stddev_bound
+			WHERE database.%2$s <= stddev_bound.higher AND database.%2$s >= stddev_bound.lower;'
+	,databaseobject,propriety);
+			END	
+$filter_outlier_with_iq$;
+
+SELECT Count(*) FROM filter_outlier_with_stddev('stddev_table','sog');
+
 
  
 
