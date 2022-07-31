@@ -46,3 +46,21 @@ FROM  hampel_filter_outlier_detection('hamplefilteredtable',3) h
 WHERE hamplefilteredtable.id = h.id;
 ```
 
+
+## Example hampel_filter_outlier_detection
+
+```postgresql
+ SELECT kalman_filter(kalman_table.id, kalman_table.latitude) FROM kalman_table;
+ 
+ 
+ ## Example z_score_filter_outlier detectin
+ 
+```postgresql
+SELECT * FROM z_score_filter('kalmanfilteredtable','mmsi','sog');
+```
+ 
+ ## Example filter_outlier_with_stddev
+
+```postgresql
+SELECT * FROM filter_outlier_with_stddev('stddev_table','sog');
+```
