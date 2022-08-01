@@ -1,8 +1,7 @@
-CREATE TABLE filteredtable AS (SELECT ROW_NUMBER() OVER() AS id, * FROM aisinput ORDER BY aisinput.mmsi, aisinput.t);
+-- CREATE TABLE filteredtable AS (SELECT ROW_NUMBER() OVER() AS id, * FROM aisinput ORDER BY aisinput.mmsi, aisinput.t);
 
 
-/*
- * Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
+ /* Author: https://github.com/YakshHaranwala/PTRAIL/blob/main/ptrail/preprocessing/filters.py
  * Purpose: Remove duplicate row by the identifier of the row =  (key_name, time)
  *
  * Parameters
@@ -15,7 +14,7 @@ CREATE TABLE filteredtable AS (SELECT ROW_NUMBER() OVER() AS id, * FROM aisinput
  * Filtered table 
  */
 CREATE OR REPLACE FUNCTION remove_duplicate (table_name text,key_name text,t text)
-  RETURNS SETOF aisinput
+  RETURNS SETOF filteredtable
   LANGUAGE plpgsql AS
 $remove_duplicate$
 BEGIN
@@ -44,7 +43,7 @@ $remove_duplicate$;
  * Filtered table 
  */
 CREATE OR REPLACE FUNCTION filter_by_treshold(table_name text,key_name text,condition text,threshold DOUBLE PRECISION)
-  RETURNS SETOF aisinput
+  RETURNS SETOF filteredtable
   LANGUAGE plpgsql AS
 $filter_by_treshold$
 BEGIN
@@ -78,7 +77,7 @@ $filter_by_treshold$;
  * Filtered table 
  */
 CREATE OR REPLACE FUNCTION bounding_box_filter (table_name text,x_name text, xmin float, xmax float, y_name text, ymin float, ymax float)
-  RETURNS SETOF aisinput
+  RETURNS SETOF filteredtable
   LANGUAGE plpgsql AS
 $bounding_box_filter$
 BEGIN
@@ -107,7 +106,7 @@ $bounding_box_filter$;
  */
 
 CREATE OR REPLACE FUNCTION iqr_filter(table_name text,column_name text)
-  RETURNS SETOF aisinput
+  RETURNS SETOF filteredtable
   LANGUAGE plpgsql AS
 $iqr_filter$
 BEGIN
@@ -152,7 +151,7 @@ $iqr_filter$;
  */
 
 CREATE OR REPLACE FUNCTION z_score_filter(table_name text,column_name text)
-  RETURNS SETOF kalmanfilteredtable
+  RETURNS SETOF filteredtable
   LANGUAGE plpgsql AS
 $z_score_filter$
 BEGIN
@@ -189,7 +188,7 @@ $z_score_filter$;
  */
 
  CREATE OR REPLACE FUNCTION stddev_filter(table_name text,column_name text)
-  RETURNS SETOF stddev_table
+  RETURNS SETOF filteredtable
   LANGUAGE plpgsql AS
 $stddev_filter$
 BEGIN
